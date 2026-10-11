@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강화 읽걷쓰 AI 연수</title>
+  
+  <link href="/assets/ui.css" rel="stylesheet">
+  <style>
+    html, body { height: 100vh; margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; font-family: 'Malgun Gothic', sans-serif; }
+    .app-wrapper { display: flex; flex-direction: column; height: 100%; max-width: 400px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    .btn-3d-container { display: flex; justify-content: space-evenly; align-items: center; padding: 10px 0; }
+    .btn-3d { 
+      width: 65px; height: 65px; border-radius: 50%; font-weight: bold; font-size: 11px; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px;
+      border: none; outline: none; transition: all 0.1s; position: relative; user-select: none;
+    }
+    .btn-Y-idle, .btn-N-idle { background-color: #e5e7eb; color: #4b5563; box-shadow: 0 5px #d1d5db; }
+    .btn-Y-active { background-color: #10b981; color: white; box-shadow: 0 2px #059669; transform: translateY(3px); }
+    .btn-N-active { background-color: #f97316; color: white; box-shadow: 0 2px #c2410c; transform: translateY(3px); }
+    .btn-3d:active { transform: translateY(3px); box-shadow: 0 2px #d1d5db; }
+    #drop-zone { border: 1.5px dashed #cbd5e1; border-radius: 8px; transition: all 0.2s; flex-grow: 1; min-height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; background-color: #f8fafc; }
+    #drop-zone.dragover { background-color: #e0e7ff; border-color: #6366f1; border-style: solid; }
+  html,body {height:100dvh;}
+.card {min-height:0;} #main-section {min-height:0;} textarea {min-height:70px;}
+@media(max-height:520px){html,body{overflow:auto;height:auto;min-height:100dvh}.app-wrapper{min-height:520px}}
+</style>
+</head>
+<body>
+  <div id="notice" role="status" class="notice hidden"></div>
+<div class="app-wrapper">
+    <div class="card">
+      <div class="text-center bg-indigo-50 border-b border-indigo-100 py-2">
+        <h1 class="text-xs font-black text-indigo-600">강화 읽걷쓰 AI 디지털 연수</h1>
+      </div>
+      <div id="login-section" class="flex flex-col justify-center h-full p-4 space-y-3">
+        <input type="text" id="school" maxlength="100" aria-label="학교명" class="w-full text-xs p-2 border rounded focus:ring-2 focus:ring-indigo-400" placeholder="학교명">
+        <input type="text" id="name" maxlength="50" aria-label="이름" class="w-full text-xs p-2 border rounded focus:ring-2 focus:ring-indigo-400" placeholder="이름">
+        <button id="btn-login" onclick="login()" class="w-full bg-indigo-600 text-white p-2 rounded font-bold text-xs">입장하기</button>
+      </div>
+      <div id="main-section" class="hidden flex-col h-full">
+        <div class="flex justify-between items-center p-2 bg-gray-50 border-b border-gray-100">
+          <span id="user-info" class="text-[10px] font-bold text-gray-600 truncate mr-2">로딩중...</span>
+          <div class="flex items-center gap-1">
+            <span id="current-code" class="bg-indigo-600 text-white text-[11px] font-black px-2 py-0.5 rounded">GH01</span>
+          </div>
+        </div>
+        <div class="border-b border-gray-100 p-2">
+          <div class="btn-3d-container">
+            <button id="btn-Y" onclick="toggleStatus('Y')" class="btn-3d btn-Y-idle"><span>👍</span><span>수행함</span></button>
+            <button id="btn-N" onclick="toggleStatus('N')" class="btn-3d btn-N-idle"><span>🤔</span><span>미완료</span></button>
+          </div>
+        </div>
+        <div class="flex flex-col flex-grow p-2 gap-2">
+          <textarea id="question" maxlength="5000" class="w-full text-[11px] p-2 border rounded resize-none flex-grow focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="질문이나 메모를 입력하세요."></textarea>
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-gray-500">사진 첨부</span>
+              <label for="file-input" class="bg-blue-100 text-blue-700 hover:bg-blue-200 text-[10px] font-bold px-2 py-1 rounded cursor-pointer transition">📂 파일 선택</label>
+              <input type="file" id="file-input" class="hidden" accept="image/*">
+            </div>
+            <div id="drop-zone">
+              <span class="text-[10px] text-gray-400 pointer-events-none" id="drop-text">여기로 이미지를 끌어오거나 Ctrl+V</span>
+              <div id="preview-container" class="hidden relative h-full w-full p-1 flex justify-center items-center">
+                <img id="image-preview" class="max-h-16 object-contain rounded">
+                <button onclick="removeImage(event)" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-2 bg-gray-50">
+          <button id="btn-submit" onclick="submitFeedback()" class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded font-bold text-[11px] transition">질문 / 사진 제출</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/assets/common.js"></script>
+<script src="/assets/participant.js"></script>
+</body>
+</html>
